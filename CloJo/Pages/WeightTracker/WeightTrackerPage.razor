@@ -1,0 +1,41 @@
+﻿@page "/weight"
+@inject IDialogService DialogService
+@inject IndexedDbAccessor indexedDbAccessor
+
+<MudText Typo="Typo.h6">Weight Tracker</MudText>
+
+<MudButton OnClick="EnableEditForm"></MudButton>
+@if (enableEditForm)
+{
+<EditForm Model="weightMeasurement" OnValidSubmit="@AddWeightMeasurement">
+	<DataAnnotationsValidator/>
+	<MudNumericField @bind-Value="weightMeasurement.Weight" Label="Enter your weight" Variant="Variant.Outlined" Step=".5M" For="@(() => weightMeasurement.Weight)" Min="100"/>
+	<MudButton ButtonType="ButtonType.Submit" Variant="Variant.Outlined">Record Weight</MudButton>
+</EditForm>	
+}
+
+
+@code {
+	public bool enableEditForm = false;
+	public WeightMeasurement weightMeasurement = new WeightMeasurement();
+
+
+	public void EnableEditForm()
+	{
+		if (!enableEditForm)
+		{
+			enableEditForm = true;
+		}
+	}
+
+	public async Task AddWeightMeasurement()
+	{
+		await indexedDbAccessor.SetValueAsync("WeightMeasurement", 
+		new
+		{ Id = Guid.NewGuid().ToString(), 
+		  RecordedDateTime = DateTime.Now,
+		  Weight = weightMeasurement.Weight,
+		  UnitOfMeasurementId = 1,
+		  UnitOfMeasurementName = "American"});
+	}
+}
